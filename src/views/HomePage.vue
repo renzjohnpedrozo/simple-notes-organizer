@@ -12,8 +12,25 @@
       <div class="container">
 
         <div class="page-header">
-          <h1>My Notes</h1>
-          <p>Manage and organize your notes.</p>
+          <div>
+            <span class="eyebrow">YOUR PERSONAL SPACE</span>
+            <h1>My Notes</h1>
+          </div>
+
+        </div>
+
+        <div class="stats-bar">
+          <div class="stat-item">
+            <span class="stat-value">{{ normalNotes }}</span>
+            <span class="stat-label">Normal</span>
+          </div>
+
+          <div class="stat-divider"></div>
+
+          <div class="stat-item">
+            <span class="stat-value important-value">{{ importantNotes }}</span>
+            <span class="stat-label">Important</span>
+          </div>
         </div>
 
         <ion-button
@@ -48,9 +65,6 @@
 
           <div class="section-title">
             <h2>Notes</h2>
-            <span>
-              {{ notes.length }}
-            </span>
           </div>
 
           <div class="notes-list">
@@ -93,7 +107,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+
+import {
+  createNote,
+  deleteNote as deleteFirebaseNote,
+  subscribeToNotes,
+  updateNote as updateFirebaseNote
+} from '@/services/noteService';
 
 import {
   IonPage,
@@ -122,42 +143,52 @@ const editingNote = ref<Note | null>(null);
 
 const notes = ref<Note[]>([]);
 
-const saveNote = (formData: {
+const importantNotes = computed(() =>
+  notes.value.filter(note => note.status === 'Important').length
+);
+
+const normalNotes = computed(() =>
+  notes.value.filter(note => note.status === 'Normal').length
+);
+
+let stopNotesSubscription: (() => void) | undefined;
+
+onMounted(() => {
+  stopNotesSubscription = subscribeToNotes(firebaseNotes => {
+    notes.value = firebaseNotes.map(note => ({
+      id: note.id ?? '',
+      title: note.title,
+      content: note.content,
+      category: note.category,
+      dateCreated: note.dateCreated,
+      status: note.status
+    }));
+  });
+});
+
+onUnmounted(() => {
+  stopNotesSubscription?.();
+});
+
+const saveNote = async (formData: {
   title: string;
   content: string;
   category: string;
   status: string;
 }) => {
+  const noteData = {
+    title: formData.title,
+    content: formData.content,
+    category: formData.category,
+    dateCreated: editingNote.value?.dateCreated ?? new Date().toLocaleDateString(),
+    status: formData.status
+  };
 
   if (editingNote.value) {
-
-    const index = notes.value.findIndex(
-      note => note.id === editingNote.value?.id
-    );
-
-    if (index !== -1) {
-
-      notes.value[index] = {
-        ...editingNote.value,
-        ...formData
-      };
-
-    }
-
+    await updateFirebaseNote(editingNote.value.id, noteData);
   }
-
   else {
-
-    const newNote: Note = {
-      id: Date.now().toString(),
-      title: formData.title,
-      content: formData.content,
-      category: formData.category,
-      dateCreated: new Date().toLocaleDateString(),
-      status: formData.status
-    };
-
-    notes.value.push(newNote);
+    await createNote(noteData);
   }
 
   closeForm();
@@ -168,10 +199,8 @@ const editNote = (note: Note) => {
   showForm.value = true;
 };
 
-const deleteNote = (id: string) => {
-  notes.value = notes.value.filter(
-    note => note.id !== id
-  );
+const deleteNote = async (id: string) => {
+  await deleteFirebaseNote(id);
 };
 
 const closeForm = () => {
@@ -183,11 +212,11 @@ const closeForm = () => {
 <style scoped>
 
 ion-content {
-  --background: #eef5fb;
+  --background: #f4f7f4;
 }
 
 ion-toolbar {
-  --background: #1f5fae;
+  --background: #173f3a;
   --color: #ffffff;
   --border-width: 0;
 }
@@ -198,33 +227,81 @@ ion-title {
 
 .container {
   width: 100%;
-  max-width: 700px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 25px 18px 40px;
+  padding: 32px 20px 48px;
 }
 
 .page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
   margin-bottom: 20px;
+  text-align: center;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #ba6b3d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
 }
 
 .page-header h1 {
   margin: 0;
-  font-size: 30px;
-  font-weight: 700;
-  color: #1d3557;
+  color: #173f3a;
+  font-size: 34px;
+  font-weight: 750;
+  letter-spacing: 0;
 }
 
-.page-header p {
-  margin: 6px 0 0;
-  color: #60758a;
-  font-size: 14px;
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 17px 20px;
+  margin-bottom: 18px;
+  border: 1px solid #dce7df;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(23, 63, 58, 0.06);
+}
+
+.stat-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.stat-value {
+  color: #173f3a;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.important-value {
+  color: #ba6b3d;
+}
+
+.stat-label {
+  color: #71807a;
+  font-size: 13px;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 25px;
+  background: #dce7df;
 }
 
 .add-button {
-  --background: #1f5fae;
-  --background-hover: #194f91;
+  --background: #ba6b3d;
+  --background-hover: #a95d33;
   --color: #ffffff;
-  --border-radius: 8px;
+  --border-radius: 10px;
   height: 46px;
   margin-bottom: 25px;
   font-weight: 600;
@@ -232,16 +309,17 @@ ion-title {
 
 .form-container {
   background: #ffffff;
-  border: 1px solid #d8e5f2;
-  border-radius: 8px;
-  padding: 18px;
+  border: 1px solid #dce7df;
+  border-radius: 14px;
+  padding: 20px;
   margin-bottom: 25px;
+  box-shadow: 0 8px 24px rgba(23, 63, 58, 0.06);
 }
 
 .form-container h2 {
   margin: 0 0 15px;
   font-size: 20px;
-  color: #1d3557;
+  color: #173f3a;
 }
 
 .section-title {
@@ -255,21 +333,7 @@ ion-title {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #1d3557;
-}
-
-.section-title span {
-  min-width: 24px;
-  height: 24px;
-  padding: 0 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  background: #d7e7f7;
-  color: #245b96;
-  font-size: 12px;
-  font-weight: 600;
+  color: #173f3a;
 }
 
 .notes-list {
@@ -280,8 +344,8 @@ ion-title {
 
 .empty-state {
   background: #ffffff;
-  border: 1px solid #d8e5f2;
-  border-radius: 8px;
+  border: 1px solid #dce7df;
+  border-radius: 14px;
   text-align: center;
   padding: 40px 20px;
   margin-top: 10px;
@@ -290,29 +354,44 @@ ion-title {
 .empty-state h2 {
   margin: 0 0 8px;
   font-size: 20px;
-  color: #1d3557;
+  color: #173f3a;
 }
 
 .empty-state p {
   margin: 0 0 20px;
-  color: #60758a;
+  color: #65736f;
   font-size: 14px;
 }
 
 .empty-state ion-button {
-  --border-color: #1f5fae;
-  --color: #1f5fae;
+  --border-color: #397064;
+  --color: #397064;
   --border-radius: 7px;
 }
 
 @media (max-width: 480px) {
 
   .container {
-    padding: 20px 14px 35px;
+    padding: 24px 14px 35px;
   }
 
   .page-header h1 {
-    font-size: 27px;
+    font-size: 29px;
+  }
+
+  .stats-bar {
+    gap: 14px;
+    padding: 15px;
+  }
+
+  .stat-item {
+    display: block;
+  }
+
+  .stat-label {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
   }
 
 }
