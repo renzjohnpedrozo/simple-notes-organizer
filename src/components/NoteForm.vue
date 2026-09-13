@@ -134,14 +134,14 @@ const cancel = () => {
 
 <style scoped>
 .note-form {
-  padding: 4px;
+  padding: 2px;
 }
 
 ion-item {
-  --background: #f8fbff;
-  --border-color: #d8e3f0;
-  --highlight-color-focused: #1f5fae;
-  --border-radius: 8px;
+  --background: #f8faf8;
+  --border-color: #d9e4dc;
+  --highlight-color-focused: #397064;
+  --border-radius: 9px;
   margin-bottom: 12px;
 }
 
@@ -149,36 +149,39 @@ ion-input,
 ion-textarea,
 ion-select {
   --color: #222;
-  --placeholder-color: #8a96a3;
+  --placeholder-color: #89958f;
 }
 
 ion-input::part(label),
 ion-textarea::part(label),
 ion-select::part(label) {
-  color: #245b96;
+  color: #397064;
   font-weight: 600;
 }
 
 .buttons {
-  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 ion-button {
-  height: 44px;
-  margin-bottom: 10px;
-  --border-radius: 7px;
+  height: 43px;
+  margin: 0;
+  --border-radius: 9px;
   font-weight: 600;
 }
 
 .save-button {
-  --background: #1f5fae;
-  --background-hover: #194f91;
+  --background: #397064;
+  --background-hover: #2d5d53;
   --color: #ffffff;
 }
 
 .cancel-button {
-  --border-color: #1f5fae;
-  --color: #1f5fae;
+  --border-color: #b8c9bd;
+  --color: #53665d;
 }
 
 @media (max-width: 480px) {
@@ -188,6 +191,10 @@ ion-button {
 
   ion-item {
     margin-bottom: 10px;
+  }
+
+  .buttons {
+    grid-template-columns: 1fr;
   }
 
   ion-button {

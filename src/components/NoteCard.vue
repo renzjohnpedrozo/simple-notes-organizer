@@ -104,11 +104,17 @@ const deleteNote = () => {
 
 .note-card {
   margin: 0;
-  border: 1px solid #dedede;
-  border-radius: 10px;
+  border: 1px solid #dce7df;
+  border-radius: 12px;
   box-shadow: none;
   background: #ffffff;
   overflow: hidden;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.note-card:hover {
+  border-color: #b9d0c1;
+  box-shadow: 0 8px 22px rgba(23, 63, 58, 0.07);
 }
 
 ion-card-header {
@@ -132,7 +138,7 @@ ion-card-title {
   font-size: 19px;
   font-weight: 650;
   line-height: 1.35;
-  color: #222;
+  color: #173f3a;
   overflow-wrap: anywhere;
 }
 
@@ -146,7 +152,7 @@ ion-badge {
 
 .note-content {
   margin: 0 0 18px;
-  color: #444;
+  color: #53635d;
   font-size: 15px;
   line-height: 1.55;
   white-space: pre-wrap;
@@ -154,7 +160,7 @@ ion-badge {
 }
 
 .note-details {
-  border-top: 1px solid #eeeeee;
+  border-top: 1px solid #e7eee9;
   padding-top: 12px;
 }
 
@@ -167,13 +173,13 @@ ion-badge {
 }
 
 .detail-label {
-  color: #777;
+  color: #89958f;
   font-size: 13px;
   flex-shrink: 0;
 }
 
 .detail-value {
-  color: #444;
+  color: #53635d;
   font-size: 13px;
   text-align: right;
   overflow-wrap: anywhere;
@@ -190,27 +196,27 @@ ion-badge {
   flex: 1;
   height: 40px;
   margin: 0;
-  --border-radius: 6px;
+  --border-radius: 8px;
   font-weight: 600;
   font-size: 13px;
 }
 
 .edit-button {
-  --background: #3880ff;
-  --background-hover: #3171e0;
+  --background: #397064;
+  --background-hover: #2d5d53;
   --color: #ffffff;
 }
 
 .delete-button {
   --border-width: 1px;
-  --border-color: #eb445a;
-  --color: #eb445a;
+  --border-color: #d79b88;
+  --color: #a6533f;
 }
 
 @media (max-width: 480px) {
 
   .note-card {
-    border-radius: 8px;
+    border-radius: 10px;
   }
 
   ion-card-header {

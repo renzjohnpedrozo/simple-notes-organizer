@@ -14,12 +14,10 @@ jobs:
 
     steps:
 
-      # 1. Get the source code
       - name: Checkout project
         uses: actions/checkout@v4
 
 
-      # 2. Install Node.js 24
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -27,12 +25,10 @@ jobs:
           cache: 'npm'
 
 
-      # 3. Install project dependencies
       - name: Install npm dependencies
         run: npm ci
 
 
-      # 4. Build Ionic/Vue application
       - name: Build Ionic application
         run: npm run build
         env:
@@ -45,7 +41,6 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
 
-      # 5. Install Java 21
       - name: Set up Java 21
         uses: actions/setup-java@v5
         with:
@@ -53,7 +48,6 @@ jobs:
           java-version: '21'
 
 
-      # 6. Confirm Java version
       - name: Check Java version
         run: |
           java -version
@@ -61,7 +55,6 @@ jobs:
           echo "JAVA_HOME=$JAVA_HOME"
 
 
-      # 7. Create the Android platform when it is not committed to the repo
       - name: Prepare Capacitor Android
         run: |
           if [ ! -d android ]; then
@@ -70,30 +63,25 @@ jobs:
           npx cap sync android
 
 
-      # 8. Give Gradle execution permission
       - name: Make Gradle executable
         run: chmod +x android/gradlew
 
 
-      # 9. Check Gradle environment
       - name: Check Gradle version
         working-directory: android
         run: ./gradlew --version
 
 
-      # 10. Build debug APK
       - name: Build Android APK
         working-directory: android
         run: ./gradlew --no-daemon assembleDebug
 
 
-      # 11. Rename the generated APK for this app
       - name: Rename APK
         run: |
           cp android/app/build/outputs/apk/debug/app-debug.apk simple-notes-organizer.apk
 
 
-      # 12. Upload APK to GitHub Actions
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
